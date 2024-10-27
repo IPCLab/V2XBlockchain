@@ -1,0 +1,22 @@
+git rm --cached
+/*.xlsx
+/*.csv
+/*.png
+/*.txt
+practice.py
+BCplot.py
+venv/*
+.venv/*
+Figure/*
+__pycache__/*
+Performance_Result/*
+Area-BasedCSV/*
+MAX_SINRCSV/*
+*/__pycache__/*
+*/Ethereum/__pycache__/*
+*/Ethereum/Distribution/__pycache__/*
+MARL_SIL/*
+MAX_SINR_ProCSV/*
+output/*
+output_random_seed/*
+RandomCSV/*
