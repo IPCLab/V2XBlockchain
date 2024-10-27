@@ -17,7 +17,7 @@ The multi-layer integration of blockchain technology and V2X communication is de
 1. Clone the repository of this project:
 
 ```
-git clone
+git clone https://github.com/IPCLab/V2XBlockchain.git
 ```
 
 2. Install the required packages:
