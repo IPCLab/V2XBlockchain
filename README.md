@@ -5,7 +5,7 @@ This system resolves the integration challenges between blockchain and V2X commu
 The multi-layer integration of blockchain technology and V2X communication is described as below.
 
 <div align="center">
-    <img src="./assets/system.png?raw=true" width=700>
+    <img src="./assets/system2.png?raw=true" width=700>
 </div>
 
 1. The SUMO software tool is used to create vehicle datasets for simulating **Transportation Layer**, classifying traffic data into urban, suburban, and rural areas. RSUs were placed based on vehicle positions, and satellite data came from CelesTrak’s Starlink dataset. Non-mobile RSUs were designated as blockchain nodes, with each node given a node ID, transaction pool, local blockchain, and hash power, which was distributed based on a Gaussian distribution.
