@@ -182,7 +182,7 @@ class V2Vchannels:
         def PL_NLos():
             return 36.85 + 30.0 * np.log10(d3d) + 18.9 * np.log10(self.fc)
 
-        rand = np.random.uniform() 
+        rand = np.random.uniform()
         blocker_height = 2.0
         PL_Los_p = min(1, 1.05 * np.exp(-0.0114 * d))
         PL_NLosv_p = min(0, 1 / (0.0312 * d) * np.exp(-(np.log(d) - 5.0063) ** 2 / 2.4544))
@@ -212,14 +212,14 @@ class V2Vchannels:
 
     def get_shadowing(self, delta_distance, shadowing):
         return self.shadow_std # self.shadow_std = 3 #3GPP TR 36.885 for LOS Shadowing
-    
+
 class V2Ichannels:
 
     # Simulator of the V2I channels
 
     def __init__(self, bs):
         self.h_bs = 25
-        self.h_ut = 1.5 
+        self.h_ut = 1.5
         self.fc = 3.5 #3GPP TR 37.885 Below 6GHz Parameter
         self.Decorrelation_distance = 50
 
@@ -352,7 +352,7 @@ class V2Schannels:
         self.Sc_Loss = 2.2 #Scintillation Loss [dB]
         self.R = 6371.0
         #self.ST_position = []  # center of the grids
-        # self.shadow_std = 8 
+        # self.shadow_std = 8
         self.shadow_std = 3
         # 23/12/21 Ibrahim Update (Line556~557)
 
@@ -453,7 +453,7 @@ class V2Schannels:
         # elevation_angle = itur.utils.elevation_angle(self.h_bs, lat_sat, lon_sat, lat_grid, lon_grid)
 
         # rain_at = itur.models.itu618.rain_attenuation(lat_grid, lon_grid, self.sat_fre, elevation_angle,hs=hs,p=0.51)
-        
+
         elevation_angle = itur.utils.elevation_angle(h=self.h_bs,lat_s= lat_sat, lon_s=lon_sat, lat_grid=lat_grid, lon_grid =lon_grid)
 
         rain_at = itur.models.itu618.rain_attenuation(lat=lat_grid,lon= lon_grid, f=self.sat_fre, el = elevation_angle, hs=hs, p=0.51)
@@ -474,7 +474,7 @@ class V2Schannels:
         sum = rain_at.item()+cloud_at.item()
 
 
-        sum = float(np.asarray(re.findall("\d+\.\d+", str(sum.item()))))
+        sum = float(np.asarray(re.findall(r"\d+\.\d+", str(sum.item()))))
 
 
         total_at =   self.Sc_Loss + self.SF +sum
@@ -526,25 +526,25 @@ class Vehicle:
 
 class Environ:
     def __init__(self, method, test, Satellite):
-        self.method = method 
+        self.method = method
         self.Satellite_ = Satellite
         self.test = test
-        
+
         # 將環境中所有RSU(BS)設定為Blockchain Node
         # 這裡宣告一個空list來存所有RSU(BS) Node
         self.rsu_nodes_list = []
-        
+
         if test == True:
             chunksize = 10 ** 6  # adjust this value depending on your system's memory
             chunks = []
             # for chunk in pd.read_csv('Data_0722_2_with_area_type.csv', chunksize=chunksize, on_bad_lines="skip"):
-            for chunk in pd.read_csv(sys.argv[3], chunksize=chunksize, on_bad_lines="skip"):    
+            for chunk in pd.read_csv(sys.argv[3], chunksize=chunksize, on_bad_lines="skip"):
                 # perform data preprocessing here if needed
                 chunks.append(chunk)
             self.df = pd.concat(chunks, axis=0)
 
             # 我們的環境中，BS和RSU混用
-            self.bs = pd.read_csv('data_config.csv', on_bad_lines ="skip")   
+            self.bs = pd.read_csv('data_config.csv', on_bad_lines ="skip")
             num_rsu = len(self.bs)
             num_miner = 30
             num_general_node = num_rsu - num_miner
@@ -554,33 +554,33 @@ class Environ:
             # print(rsu_hashpowers)
             # print(sorted(rsu_hashpowers)[num_general_node-1])
             # print(rsu_hashpowers + sorted(rsu_hashpowers)[num_general_node])
-            rsu_hashpowers = np.clip(rsu_hashpowers + (-sorted(rsu_hashpowers)[num_general_node-1]), 0, None) 
-            # shift the distribution according to the num_general_node'th small value, and clip all value small than 0, 
-            # ensure that there is num_general_node rsu node with 0 hash power 
+            rsu_hashpowers = np.clip(rsu_hashpowers + (-sorted(rsu_hashpowers)[num_general_node-1]), 0, None)
+            # shift the distribution according to the num_general_node'th small value, and clip all value small than 0,
+            # ensure that there is num_general_node rsu node with 0 hash power
             # print(rsu_hashpowers)
 
             # 為每一個RSU(BS)建立Node
             for idx, row in enumerate(self.bs.itertuples(index = True, name = 'Pandas')):
                 rsu_node = Node(rsu_id = "rsu" + str(idx), rsu_hashpower = rsu_hashpowers[idx])
                 Node.generate_gensis_block(rsu_node)
-                self.rsu_nodes_list.append(rsu_node)      
+                self.rsu_nodes_list.append(rsu_node)
                 # print(f"RSU Node ID: {rsu_node.id}; Hashpower: {rsu_node.hashPower}")
-                # print(f"Local Blockchain of {rsu_node.id}: {rsu_node.localBlockchain[0].id}") 
-                    
+                # print(f"Local Blockchain of {rsu_node.id}: {rsu_node.localBlockchain[0].id}")
+
             self.newsat = pd.read_csv('data_sat.csv', on_bad_lines ="skip")
-            
+
             self.vehicle_time_id = var.train_sumo_step # var.train_sumo_step = 65
             self.agent = var.agent_test # agent_test = range(100,600,100)
             self.limted_cluster = var.limted_cluster # limted_cluster = 22
             self.limted_cluster_full = var.limted_cluster_full # limted_cluster_full = 22
             self.n_cluster_ = var.n_cluster_test # n_cluster_test = 20
-            
+
             # payload size
             self.demand_size = int(var.V2V_payloadsize_test * 8) # V2V_payloadsize_test = V2V_payloadsize = 250
             self.demand_size_all = int(var.V2I_payloadsize_test * 8 * (demend + 1)) # V2I_payloadsize_test = V2I_payloadsize = 500 & demand = 0
             self.demand_s_size = int(var.V2S_payloadsize_test * 8) # V2S_payloadsize_test = V2S_payloadsize = 500
 
-        # 這裡 else 做的事情和上面 if test == True 是一樣的    
+        # 這裡 else 做的事情和上面 if test == True 是一樣的
         else:
             chunksize = 10 ** 6  # adjust this value depending on your system's memory
             chunks = []
@@ -590,17 +590,17 @@ class Environ:
                 chunks.append(chunk)
 
             self.df = pd.concat(chunks, axis=0)
-            
+
             self.bs = pd.read_csv('data_config.csv', on_bad_lines ="skip")
-            
+
             self.newsat = pd.read_csv('data_sat.csv', on_bad_lines ="skip")
-            
+
             self.vehicle_time_id = var.train_sumo_step
             self.agent = var.agent_tarin
             self.limted_cluster = var.limted_cluster
             self.limted_cluster_full = var.limted_cluster_full
             self.n_cluster_ = var.n_cluster_train
-            
+
             self.demand_size = int(var.V2V_payloadsize * 8)
             self.demand_size_all = int(var.V2I_payloadsize * 8 * (demend + 1))
             self.demand_s_size = int(var.V2S_payloadsize * 8)
@@ -608,13 +608,13 @@ class Environ:
         # channel model 現在mode設定為NR
         if var.mode == 'LTE':
             self.V2Vchannels = V2Vchannels_LTE()
-            self.V2Ichannels = V2Ichannels_LTE(self.bs)            
+            self.V2Ichannels = V2Ichannels_LTE(self.bs)
         else: # mode = NR
             self.V2Vchannels = V2Vchannels()
             # 將儲存Base Station dataset的dataframe bs作為class V2Ichannels的input參數
             self.V2Ichannels = V2Ichannels(self.bs)
         self.V2Schannels = V2Schannels()
-        
+
 
         self.sumo_step = 0
 
@@ -622,7 +622,7 @@ class Environ:
         self.vehicles = []
         self.veh_position = []
         self.veh_area = []
-        self.neighbor_vehicles = []        
+        self.neighbor_vehicles = []
         self.ST_position = []
         self.new_array = []
 
@@ -636,10 +636,10 @@ class Environ:
         self.demand_urgent = []
 
         self.Switch_count = 0
-        self.switch_ratio = 0        
-        
+        self.switch_ratio = 0
+
         self.reward = 0
-        self.restor = True        
+        self.restor = True
         self.to_serv_from = []
         self.t = datetime.utcnow()
 
@@ -694,15 +694,15 @@ class Environ:
         self.n_RB = 0
         self.K = 1.38065e-23 #Boltzmann Constant
         self.T = 273.15
-        
+
         self.n_Veh = 0
         self.n_neighbor = 0
-        
+
         self.time_fast = 0.001
         self.time_slow = 0.1  # update slow fading/vehicle position every 100 ms
         self.bandwidth = int(1e6)  # bandwidth per RB, 1 MHz if it is more or less than 1 MHz change in Data rate
         # self.bandwidth = 0.5 * int(1e6)
-        
+
         self.v2v_selection = 0
         self.v2i_selection = 0
         self.v2s_selection = 0
@@ -723,7 +723,7 @@ class Environ:
         self.SINR_list_ep_V2V = []
         self.SINR_list_ep_V2I = []
         self.SINR_list_ep_V2S = []
-        
+
         self.urban_SNR_per_episode_V2V = []
         self.suburban_SNR_per_episode_V2V = []
         self.rural_SNR_per_episode_V2V = []
@@ -737,24 +737,24 @@ class Environ:
         self.rural_SNR_per_episode_V2S = []
 
         self.step_count_V2V = np.ones(len(self.vehicles))
-        self.step_count = np.ones(len(self.vehicles))        
+        self.step_count = np.ones(len(self.vehicles))
         self.step_count_V2S = np.ones(len(self.vehicles))
-        
+
         self.V2V_Rate_latency = np.zeros(len(self.vehicles))
         self.V2I_Rate_latency = np.zeros(len(self.vehicles))
         self.V2S_Rate_latency = np.zeros(len(self.vehicles))
-        
+
         self.Data_rate_V2V_all = np.zeros(len(self.vehicles))
         self.Data_rate_V2I_all = np.zeros(len(self.vehicles))
         self.Data_rate_V2S_all = np.zeros(len(self.vehicles))
-        
+
         self.Data_rate_V2V_all_check = np.zeros(len(self.vehicles))
         self.Data_rate_V2I_all_check = np.zeros(len(self.vehicles))
         self.Data_rate_V2S_all_check = np.zeros(len(self.vehicles))
-        
+
         self.remain = np.zeros(len(self.vehicles))
         self.Data_rate_spacific = np.zeros(len(self.vehicles))
-        
+
         self.SNR_rate_spacific_V2V = np.zeros(len(self.vehicles))
         self.SNR_rate_spacific_V2I = np.zeros(len(self.vehicles))
         self.SNR_rate_spacific_V2S = np.zeros(len(self.vehicles))
@@ -764,27 +764,27 @@ class Environ:
         self.demand_switch_V2V = []
         self.demand_switch_V2I = []
         self.demand_switch_V2S = []
-        
+
         self.V2V_Rate = []
         self.V2I_Rate = []
         self.V2S_Rate = []
-        
+
         self.V2V_SINR_all = []
         self.V2I_SINR_all = []
         self.V2S_SINR_all = []
-        
+
         self.delay = []
         self.state_to_serv_from = []
-        
+
         self.V2V_Interference_all = []
         self.V2I_Interference_all = []
         self.V2S_Interference_all = []
-        
-        # self.act_store = np.zeros(650, dtype='int32')  
+
+        # self.act_store = np.zeros(650, dtype='int32')
         # the size is the maximum number of vehicles on the road
         self.df_act_store = pd.DataFrame(columns=['id', 'act', "step"])
         self.df_act_store_latency = pd.DataFrame(columns=['id', 'latency', "step"])
-        
+
         self.truck_record = []
         self.veh_record = []
         self.act_store_index = 0
@@ -802,7 +802,7 @@ class Environ:
     def add_new_neighbor_vehicles(self, start_position, start_direction, start_velocity, id, area,Geo_position):
 
         self.neighbor_vehicles.append(Vehicle(start_position, start_direction, start_velocity, id, area,Geo_position))
-    
+
     def add_new_satellite(self, start_position, start_direction, start_velocity, id, area,Geo_position):
         self.satellite.append(Vehicle(start_position, start_direction, start_velocity, id, area,Geo_position))
 
@@ -816,7 +816,7 @@ class Environ:
 
     def get_Geo_coordinate(self, time):
 
-      
+
         o = Orbital(satellite=var.sat_name)
 
 
@@ -839,13 +839,13 @@ class Environ:
             return np.average(x)
         x = sum(x) / (len(x) - x.count(0)) if (len(x) - x.count(0)) != 0 else 0
         return x
-    
-    
+
+
     def renew_positions(self):
         global alt
         global indexitreation
         global resource_use_reward
-        global ST_resource_use_reward       
+        global ST_resource_use_reward
         global tmp
         global ans
         global dfcluster
@@ -882,29 +882,29 @@ class Environ:
                 # self.vehicle_time_id = var.train_sumo_step = 65
                 # self.vehicle_time_id = round(self.vehicle_time_id + 0.1, 1) # 取到小數點後一位
                 self.vehicle_time_id = round(self.vehicle_time_id + 0.5, 1) # 取到小數點後一位
-                lst = self.df.loc[round(self.df['time'], 1) == self.vehicle_time_id] # self.df -> vehicle dataset     
+                lst = self.df.loc[round(self.df['time'], 1) == self.vehicle_time_id] # self.df -> vehicle dataset
                 # if (self.df['time'] == self.vehicle_time_id).any():
                 #     print(f"vehicle time: {self.vehicle_time_id}")
-                
+
                 self.sumo_step = self.vehicle_time_id
                 # agent = agent
 
                 # if lst['vehicle_x'].count() > (max(agent) + 1):
                 #     # 當 lst 裡面的車輛數 > 最大 agent (=500) + 1 時
-                #     var.stop_step = self.vehicle_time_id                    
+                #     var.stop_step = self.vehicle_time_id
                 #     # 這裡使得 test_episodic() 的 if env.sumo_step >= var.stop_step: break
                 # elif agent.count(lst['vehicle_x'].count()) == 0:
                 #     print(f"沒有符合range(100,600,100)的車輛數")
                 #     print(f"sumo_step = {self.sumo_step}")
                 #     continue
-                
+
                 # lsts = self.st.loc[self.st['time'] == self.vehicle_time_id]
                 # new_st = lsts
                 newcluster = lst
                 count_index = count_index - 1
                 i = 0
                 # m = pd.DataFrame()
-                
+
                 print(f"# vehicles: {len(newcluster)}")
                 print(f"sumo_step: {self.sumo_step}")
 
@@ -916,9 +916,9 @@ class Environ:
                 else:
                     # print(f"len(newcluster): {len(newcluster)}")
                     # self.renew_positions()
-                    for idx, row in newcluster.iterrows():                         
+                    for idx, row in newcluster.iterrows():
                         self.add_new_vehicles([getattr(row, "vehicle_x"), getattr(row, "vehicle_y")],
-                                              getattr(row, "vehicle_pos"), getattr(row, "vehicle_speed"), 
+                                              getattr(row, "vehicle_pos"), getattr(row, "vehicle_speed"),
                                               getattr(row, "vehicle_id"), getattr(row, "area"),
                                               [getattr(row, "lat"), getattr(row, "lon")])
                         id_vehicle.append((getattr(row, "vehicle_id")))
@@ -939,7 +939,7 @@ class Environ:
                             lon = newsat.iloc[0]['lon']
                             lat = newsat.iloc[0]['lat']
                             alt = newsat.iloc[0]['alt']
-                            
+
                         self.ST_position.append([lat, lon])
                     break
 
@@ -957,14 +957,14 @@ class Environ:
                     dfcluster = lst[['vehicle_x', 'vehicle_y']]
                     count_ = int(dfcluster['vehicle_x'].count() / var.n_cluster_train)
                     agent = agent
-                    
+
                     if lst['vehicle_x'].count() > (max(agent) + 1):
                         var.stop_step = self.vehicle_time_id
                     elif agent.count(lst['vehicle_x'].count()) == 0:
                         continue
 
                     chagent = 0
-                    
+
                     # agent = [10, 20, 30, 40, 50, 60, 70, 80, 90, 100]
                     # for i in range (len(agent)):
                     #     if agent[i] == dfcluster['vehicle_x'].count():
@@ -1050,7 +1050,7 @@ class Environ:
 
                         for item in range(0, len(centers), 1):
                             zlist = point_tree.data[
-                                point_tree.query_ball_point([centers.x.iloc[item], 
+                                point_tree.query_ball_point([centers.x.iloc[item],
                                                              centers.y.iloc[item]], 500)]
                             # print(point_tree.data[point_tree.query_ball_point([m.vehicle_x.iloc[item], m.vehicle_y.iloc[item]], 500)])
 
@@ -1069,9 +1069,9 @@ class Environ:
                         # anslist = [pd.DataFrame(y) for x, y in cells_final.groupby('cluster', as_index = False)]
                         cells_final['dist'] = cells_final[['vehicle_x', 'vehicle_y']].apply(
                             lambda row: np.linalg.norm((row.vehicle_x, row.vehicle_y)), axis=1)
-                        
+
                         cells_final.sort_values('dist', ignore_index=True, inplace=True)
-                        
+
                         ans = [[y] if len(y) <= n else np.array_split(y, (len(y) + n) // n)
                                for x, y in cells_final.groupby('cluster', as_index=False)]
 
@@ -1082,7 +1082,7 @@ class Environ:
                                 new_arraycluster.append(section)
 
                         # for count_index in range(len(anslist)):
-                        #     l = anslist[count_index]  
+                        #     l = anslist[count_index]
                         #     if len(l) > n:
                         #         df_shuffled = pd.DataFrame(l).sample(frac = 1)
                         #         df_shuffled['dist'] = df_shuffled[['vehicle_x', 'vehicle_y']].apply(
@@ -1149,13 +1149,13 @@ class Environ:
                     # with open('clustersize.txt', 'a') as f:
                     #     f.write(str(len(newcluster))+" "+str(self.sumo_step)+'\n')
                     # self.renew_positions()
-                    
+
                     if len(self.vehicles) == 0:
                         for idx1, row1 in newcluster.iterrows():
                             for idx, row in new_df.iterrows():
                                 if getattr(row1, "vehicle_x") == getattr(row, "vehicle_x") and getattr(row1, "vehicle_y") == getattr(row, "vehicle_y"):
                                     self.add_new_vehicles([getattr(row, "vehicle_x"), getattr(row, "vehicle_y")],
-                                                          getattr(row, "vehicle_pos"), getattr(row, "vehicle_speed"), 
+                                                          getattr(row, "vehicle_pos"), getattr(row, "vehicle_speed"),
                                                           getattr(row, "vehicle_id"),getattr(row, "area"),
                                                           [getattr(row, "lat"), getattr(row, "lon")])
                                     id_vehicle.append((getattr(row, "vehicle_id")))
@@ -1184,7 +1184,7 @@ class Environ:
                                         self.veh_area.append((getattr(row, "area")))
                                     else:
                                         self.add_new_vehicles([getattr(row, "vehicle_x"), getattr(row, "vehicle_y")],
-                                                              getattr(row, "vehicle_pos"), getattr(row, "vehicle_speed"), 
+                                                              getattr(row, "vehicle_pos"), getattr(row, "vehicle_speed"),
                                                               getattr(row, "vehicle_id"),getattr(row, "area"),
                                                               [getattr(row, "lat"), getattr(row, "lon")])
                                         id_vehicle.append((getattr(row, "vehicle_id")))
@@ -1220,7 +1220,7 @@ class Environ:
 
                     for idx1, row1 in new_df2.iterrows():
                         self.add_new_vehicles([getattr(row1, "vehicle_x"), getattr(row1, "vehicle_y")],
-                                               getattr(row1, "vehicle_pos"), getattr(row1, "vehicle_speed"), 
+                                               getattr(row1, "vehicle_pos"), getattr(row1, "vehicle_speed"),
                                                getattr(row1, "vehicle_id") , getattr(row1, "area"),
                                                [getattr(row1, "lat"), getattr(row1, "lon")] )
                         self.veh_position.append([getattr(row1, "vehicle_x"), getattr(row1, "vehicle_y")])
@@ -1242,14 +1242,14 @@ class Environ:
 
         var.n_vehicle = len(self.vehicles)
         self.eps = True
-        
+
         self.penalty = np.zeros(len(self.vehicles))
         self.penalty_per = np.zeros(len(self.vehicles))
         self.penalty_switch_p = np.ones(len(self.vehicles), dtype=bool)
         self.penaltya = np.zeros(len(self.vehicles))
         self.penalty_switch = np.zeros(len(self.vehicles))
         self.penaltyV2I = np.zeros(len(self.vehicles))
-        
+
         self.power_selection_v2i = np.zeros(((len(self.vehicles)), 1))
         self.power_selection_v2i_n = np.zeros(((len(self.neighbor_vehicles)), 1))
         self.power_selection_v2s = np.zeros(((len(self.vehicles)), 1))
@@ -1259,60 +1259,60 @@ class Environ:
         self.n_Veh = len(self.vehicles)
         self.n_neighbor = 1
         self.change = True
-        
+
         self.V2V_Rate = np.zeros(len(self.vehicles))
         self.V2I_Rate = np.zeros(len(self.vehicles))
         self.V2S_Rate = np.zeros(len(self.vehicles))
-        
+
         self.V2V_Rate_latency = np.zeros(len(self.vehicles))
-        self.V2I_Rate_latency = np.zeros(len(self.vehicles))        
+        self.V2I_Rate_latency = np.zeros(len(self.vehicles))
         self.V2S_Rate_latency = np.zeros(len(self.vehicles))
-        
+
         self.V2V_Rate_latency_nz = np.zeros(len(self.vehicles))
         self.V2I_Rate_latency_nz = np.zeros(len(self.vehicles))
         self.V2S_Rate_latency_nz = np.zeros(len(self.vehicles))
-        
+
         self.remain = np.zeros(len(self.vehicles))
         self.Data_rate_spacific = np.zeros(len(self.vehicles))
-        
+
         self.SNR_rate_spacific_V2V = np.zeros(len(self.vehicles))
         self.SNR_rate_spacific_V2I = np.zeros(len(self.vehicles))
         self.SNR_rate_spacific_V2S = np.zeros(len(self.vehicles))
-        
+
         self.V2V_selection = np.zeros(len(self.vehicles))
-        
+
         self.V2V_Rateall = []
         self.V2I_Rateall = []
-        
+
         self.switch_ratio = 0
-        
+
         self.v2v_selection_all = 0
         self.v2i_selection_all = 0
-        self.v2s_selection_all = 0        
+        self.v2s_selection_all = 0
         self.dump_selection_all = 0
-        
+
         self.v2v_selection = 0
         self.v2i_selection = 0
-        self.v2s_selection = 0        
+        self.v2s_selection = 0
         self.dump_selection = 0
-        
+
         self.V2V_SINR_all = np.zeros((self.n_Veh, self.n_neighbor))
         self.V2I_SINR_all = np.zeros((self.n_Veh, self.n_neighbor))
         self.V2S_SINR_all = np.zeros((self.n_Veh, self.n_neighbor))
-        
+
         self.V2V_Interference_all = np.zeros((self.n_Veh, self.n_neighbor))
         self.V2I_Interference_all = np.zeros((self.n_Veh, self.n_neighbor))
         self.V2S_Interference_all = np.zeros((self.n_Veh, self.n_neighbor))
-        
+
         self.delay = np.zeros(len(self.vehicles))
         self.state_to_serv_from = np.zeros(len(self.vehicles))
         self.mode_state = np.zeros((self.n_Veh, self.n_neighbor))
-        
+
         self.switch = np.zeros(len(self.vehicles))
         self.demand_switch_V2V = np.zeros((self.n_Veh, self.n_neighbor))
         self.demand_switch_V2I = np.zeros((self.n_Veh, self.n_neighbor))
         self.demand_switch_V2S = np.zeros((self.n_Veh, self.n_neighbor))
-        
+
         self.latency_th = np.zeros(len(self.vehicles))
         self.n_RB_max_r = self.n_Veh
         self.new_array = [[]]
@@ -1326,7 +1326,7 @@ class Environ:
             x = np.arange(0, self.n_RB_max) # self.n_RB_max = var.n_RB = 10
             y = [24, 23, 15, 10, 17]
 
-            xs = np.arange(0, self.SRB_max) 
+            xs = np.arange(0, self.SRB_max)
             ys = [25]
 
             arr = np.array(np.meshgrid(x, y)).T.reshape(-1, 2)
@@ -1347,16 +1347,16 @@ class Environ:
 
         resource_use_reward = np.zeros(self.n_RB_max_r)
         ST_resource_use_reward = np.zeros(self.SRB_max_r)
-        
+
         self.n_Veh = len(self.vehicles)
         self.individual_time_limit = self.time_slow * np.ones((self.n_Veh, self.n_neighbor))
         self.change = True
         self.active_links = np.ones((self.n_Veh, self.n_neighbor), dtype='bool')
-        
+
         self.interference_all_v2v = np.zeros(self.n_RB_max_r)
         self.interference_all_v2i = np.zeros(self.n_RB_max_r)
         self.interference_all_v2s = np.zeros(self.SRB_max_r)
-        
+
         self.V2V_Rate_avg = []
         self.V2S_Rate_avg = []
 
@@ -1366,71 +1366,71 @@ class Environ:
         # self.demand = self.demand_veh + self.demand_truck
         # self.demand_all = self.demand_size_all_veh * np.ones((self.n_Veh, self.n_neighbor))
         # self.demand_s = self.demand_s_size_veh * np.ones((self.n_Veh, self.n_neighbor))
-        
+
         self.demand = self.demand_size * np.ones((self.n_Veh, self.n_neighbor)) # V2V
         self.demand_all = self.demand_size_all * np.ones((self.n_Veh, self.n_neighbor)) # V2I
         self.demand_s = self.demand_s_size * np.ones((self.n_Veh, self.n_neighbor)) # V2S
-        
+
         self.individual_time_limit_all = self.time_slow * np.ones((self.n_Veh, self.n_neighbor))
         self.active_links_all = np.ones((self.n_Veh, self.n_neighbor), dtype='bool')
         self.Switch_count = 0
-        
+
         self.penalty_switch_p = np.ones(len(self.vehicles), dtype=bool)
         self.penaltya = np.zeros(len(self.vehicles))
         self.penaltyV2I = np.zeros(len(self.vehicles))
-        
+
         self.mode_state = np.zeros((self.n_Veh, self.n_neighbor))
-        
+
         self.penalty_switchV2V = np.zeros(len(self.vehicles))
         self.penalty_switchV2I = np.zeros(len(self.vehicles))
         self.penalty_switchV2S = np.zeros(len(self.vehicles))
-        
+
         self.Data_rate_V2V_all = np.zeros(len(self.vehicles))
         self.Data_rate_V2I_all = np.zeros(len(self.vehicles))
         self.Data_rate_V2S_all = np.zeros(len(self.vehicles))
-        
+
         self.Data_rate_V2V_all_check = np.zeros(len(self.vehicles))
         self.Data_rate_V2I_all_check = np.zeros(len(self.vehicles))
         self.Data_rate_V2S_all_check = np.zeros(len(self.vehicles))
-        
+
         self.step_count = np.ones(len(self.vehicles))
         self.step_count_V2V = np.ones(len(self.vehicles))
         self.step_count_V2S = np.ones(len(self.vehicles))
-        
+
         self.RB_selected = np.zeros((self.n_Veh, self.n_neighbor))
-        
-        
+
+
         self.success_transmission_V2V = 0
         self.failed_transmission_V2V = 0
         self.failed_transmission_V2V_truck = 0
-        
+
         self.success_transmission_V2I_veh = 0
         self.failed_transmission_V2I_truck = 0
-        
+
         self.success_transmission_V2S = 0
         self.failed_transmission_V2S = 0
         self.failed_transmission_V2S_truck = 0
-        
+
         self.success_transmission = 0
         self.failed_transmission = 0
-        
+
         self.transmission_data = 0
         self.transmission_data_count = 0
         self.transmission_data_V2V = 0
         self.transmission_data_count_V2V = 0
-        
+
         self.veh_failed = 0
         self.truck_failed = 0
-        
+
         self.V2I_Rate_avg = []
         self.V2V_limit = 0.1  ## 100 ms V2V toleratable latency
-        
+
         self.individual_time_limit = self.V2V_limit * np.ones((self.n_Veh, self.n_neighbor))
         self.individual_time_interval = np.random.exponential(0.05, (self.n_Veh, self.n_neighbor))
         self.individual_time_interval_all = np.random.exponential(0.05, (self.n_Veh, self.n_neighbor))
-        
+
         self.UnsuccessfulLink = np.zeros((self.n_Veh, self.n_neighbor))
-        
+
         # channel model
         if var.mode == 'LTE':
             self.V2Vchannels = V2Vchannels_LTE()
@@ -1450,7 +1450,7 @@ class Environ:
                                                                self.vehicles[i].position[0],
                                                                self.vehicles[i].position[1])
             self.vehicles[i].destinationsBS = destinationBS
-        
+
         for i in range(len(self.neighbor_vehicles)):
             all_position.append(self.neighbor_vehicles[i].position)
             destination1BS = self.V2Ichannels.determine_closest(self.V2Ichannels.BS_position,
@@ -1494,15 +1494,15 @@ class Environ:
 
         self.V2S_pathloss = np.zeros(
             (len(self.vehicles) + len(self.neighbor_vehicles), len(self.ST_position)))
-        
+
 
         self.V2V_channels_abs = np.zeros(
             (len(self.vehicles) + len(self.neighbor_vehicles), len(self.vehicles) + len(self.neighbor_vehicles)))
-        
+
         self.V2I_channels_abs = np.zeros(
             (max(len(self.vehicles) + len(self.neighbor_vehicles), len(self.V2Ichannels.BS_position)),
              max(len(self.vehicles) + len(self.neighbor_vehicles), len(self.V2Ichannels.BS_position))))
-        
+
         self.V2S_channels_abs = np.zeros(
             (max(len(self.vehicles) + len(self.neighbor_vehicles), len(self.ST_position)),
              max(len(self.vehicles) + len(self.neighbor_vehicles), len(self.ST_position))))
@@ -1558,13 +1558,13 @@ class Environ:
         """ Function that converts power values in Watts into dB values!"""
         _ = 10 * np.log10(W_value)
         return _
-    
+
     def convert_dB_to_W(self,dB_value):
         """ Function that converts dB values into Watts!"""
         _ = 10 ** (dB_value / 10)
         return _
 
-    
+
     def get_channel_quality(self, i):
         array_tolist = self.new_array.tolist()
 
@@ -1628,8 +1628,8 @@ class Environ:
         act = array_tolist.index([selectedj, selectedp])
 
         return act
-    
-    
+
+
     def Compute_Performance_Reward_Train(self, actions_power, step, global_clock, transmitted_clock, success_tx):
         global V2I_SINR
         global V2V_SINR
@@ -1773,27 +1773,27 @@ class Environ:
                 actionsv21[j][0] = int(self.new_array[act[j][0], 0])
                 actionsv21[j][0] = int(round(actionsv21[j][0]))
                 # print(f"new_array: {self.new_array}")
-                
+
                 # V2I
-                if np.int64(self.new_array[act[j][0], 1]) == 24:  
+                if np.int64(self.new_array[act[j][0], 1]) == 24:
                     self.power_selection_v2i[j][0] = 23
                     self.penalty[j] = 1
                     checkv2i[j][0] = 1
                     self.mode_state[j] = 1
                     resource_use[np.int64(actions[j][0])] += 1
-                    power_selection[j][0] = -100 
+                    power_selection[j][0] = -100
 
                     # if step == 4:
-                    #     print(f"車子ID: {self.vehicles[j].id}")   
+                    #     print(f"車子ID: {self.vehicles[j].id}")
                     #     print(f"demand_all[j]: {self.demand_all[j]}")
                     #     print(f"demand[j]: {self.demand[j]}")
                     #     print(f"demand_s[j]: {self.demand_s[j]}")
-                                              
+
                     if self.demand_all[j] > 0:
                         self.V2I_Rate_latency[j] += 1
                         # if step == 4:
                         #     print(f"self.V2I_Rate_latency[j] += 1")
-                    
+
                     # 以下判斷是為了當agent在此次訊息傳輸尚未完成時，認為需要從v2i切換至v2v或v2s時所設置的傳輸延遲
                     if self.demand[j] > 0 and self.demand[j] < self.demand_size: # demand_size = 2000 bits
                         self.V2V_Rate_latency[j] += 1
@@ -1808,17 +1808,17 @@ class Environ:
                         # if step == 4:
                         #     print(f"self.v2i_selection += 1")
 
-                        # receiver_rsu = "rsu" + str(self.vehicles[j].destinationsBS)                                                
+                        # receiver_rsu = "rsu" + str(self.vehicles[j].destinationsBS)
                         # LT.create_transactions(step, self.vehicles[j].id, receiver_rsu, self.demand_all[j])
-                                        
-                # Dump channel     
+
+                # Dump channel
                 elif np.int64(self.new_array[act[j][0], 1]) == 0:
                     self.power_selection_v2i[j][0] = -100
                     self.penalty[j] = 2
                     checkv2i[j][0] = -1
                     resource_use[np.int64(actions[j][0])] += 1
                     power_selection[j][0] = -100
-                    
+
                     if self.demand_all[j] > 0 and self.demand_all[j] < self.demand_size_all:
                         self.V2I_Rate_latency[j] += 1
                     elif self.demand[j] > 0 and self.demand[j] < self.demand_size:
@@ -1827,15 +1827,15 @@ class Environ:
                         self.V2S_Rate_latency[j] += 1
                     else:
                         self.dump_selection += 1
-                    
+
                 # V2S
                 elif np.int64(self.new_array[act[j][0], 1]) == 25:
                     self.power_selection_v2s[j][0] = self.V2S_power_dB
                     self.penalty[j] = 4
-                    checkv2i[j][0] = 2 
+                    checkv2i[j][0] = 2
                     sat_resource_use[np.int64(actions[j][0])] += 1
                     power_selection[j][0] = -100
-                    
+
                     if self.demand_s[j] > 0:
                         self.V2S_Rate_latency[j] += 1
                     if self.demand[j] > 0 and self.demand[j] < self.demand_size:
@@ -1844,9 +1844,9 @@ class Environ:
                         self.V2I_Rate_latency[j] += 1
                     else:
                         self.v2s_selection += 1
-                    
-                # V2V    
-                else:  
+
+                # V2V
+                else:
                     self.power_selection_v2i[j][0] = 23
                     self.penalty[j] = 3
                     checkv2i[j][0] = 0
@@ -1854,7 +1854,7 @@ class Environ:
                     resource_use[np.int64(actions[j][0])] += 1
                     power_selection[j][0] = int(self.new_array[act[j][0], 1])
                     power_selection[j][0] = int(round(power_selection[j][0]))
-                       
+
                     if self.demand[j] > 0:
                         self.V2V_Rate_latency[j] += 1
                     if self.demand_all[j] > 0 and self.demand_all[j] < self.demand_size_all:
@@ -1863,22 +1863,22 @@ class Environ:
                         self.V2S_Rate_latency[j] += 1
                     else :
                         self.v2v_selection += 1
-        
+
         actions = np.int64(actions)
         actions_n = np.int64(actions_n)
         actionsv21 = np.int64(actionsv21)
-        
+
         power_selection = np.int64(power_selection)
         power_selection_n = np.int64(power_selection_n)
-        
+
         resource_use = np.int64(resource_use)
         sat_resource_use = np.int64(sat_resource_use)
 
         checkv2i = np.int64(checkv2i)
         checkv2i_n = np.int64(checkv2i_n)
 
-        # ------------ Compute V2V rate -------------------------        
-        
+        # ------------ Compute V2V rate -------------------------
+
         # Noise calculations
         N_0_V2V =  self.convert_dB_to_W (self.sig2 + self.convert_W_to_dB(self.bandwidth)+ self.vehNoiseFigure )
         N_0_V2I = self.convert_dB_to_W (self.sig2 + self.convert_W_to_dB(self.bandwidth)+ self.bsNoiseFigure )
@@ -1886,24 +1886,24 @@ class Environ:
 
         V2I_Interference1 = np.zeros((len(self.vehicles), self.n_neighbor)) + N_0_V2I
         V2V_Interference1 = np.zeros((len(self.vehicles), self.n_neighbor)) + N_0_V2V
-        V2S_Interference1 = np.zeros(len(self.vehicles)) + N_I        
+        V2S_Interference1 = np.zeros(len(self.vehicles)) + N_I
 
         self.interference_all_v2i = np.zeros(self.n_RB_max_r) + N_0_V2I
         self.interference_all_v2v = np.zeros(self.n_RB_max_r) + N_0_V2V
         self.interference_all_v2s = np.zeros(self.SRB_max_r) + N_I
-        
+
         V2V_Rate = np.zeros((len(self.vehicles), 1))
         V2V_Interference = np.zeros(((len(self.vehicles)), self.n_neighbor))
         V2V_SINR = np.zeros((len(self.vehicles), self.n_neighbor))
         V2V_Signal = np.zeros((len(self.vehicles), self.n_neighbor))
 
         V2I_Rate = np.zeros(len(self.vehicles))
-        V2I_Interference = np.zeros(len(self.vehicles))   # V2I interference 
+        V2I_Interference = np.zeros(len(self.vehicles))   # V2I interference
         V2I_SINR = np.zeros((len(self.vehicles), self.n_neighbor))
         V2I_Signals = np.zeros(len(self.vehicles))
 
         V2S_Rate = np.zeros(len(self.vehicles))
-        V2S_Interference = np.zeros(len(self.vehicles))    # V2S interference         
+        V2S_Interference = np.zeros(len(self.vehicles))    # V2S interference
         V2S_SINR = np.zeros((len(self.vehicles), self.n_neighbor))
         V2S_Signals = np.zeros(len(self.vehicles))
 
@@ -1915,7 +1915,7 @@ class Environ:
         # print(f"self.n_neighbor: {self.n_neighbor}")
 
         for l in range((self.n_neighbor)):
-            for i in range(len(self.vehicles)):  # scanning all vehicles                
+            for i in range(len(self.vehicles)):  # scanning all vehicles
                 if (self.demand[i] > 0 and self.demand[i] < self.demand_size and
                         self.penalty[i] != 3): # 表示這台車在上一個step選擇V2V傳輸並且data沒有傳完，而這次step並沒有選擇V2V傳輸 => switch發生
                     self.switch[i] = 0
@@ -1952,19 +1952,19 @@ class Environ:
                 indexes = np.argwhere(actionsv21 == actionsv21[i][0])  # find the vehicles that share the same channel
 
                 for j in range(len(indexes)):
-                    if checkv2i[indexes[j, 0]][0] == 0:  
+                    if checkv2i[indexes[j, 0]][0] == 0:
                         # check if the neighbors in the same cluster and share the channel  V2V=0
-                        if self.demand[indexes[j, 0]] <= 0:  
+                        if self.demand[indexes[j, 0]] <= 0:
                             # Check if the transmation has been finished of the neighbors vehicles or there is switching
                             continue
-                        if checkv2i[indexes[j, 0]][0] == 1:  
+                        if checkv2i[indexes[j, 0]][0] == 1:
                             # check if the neighbors in the same cluster and share the channel  V2V=0
-                            if self.demand_all[indexes[j, 0]] <= 0:  
+                            if self.demand_all[indexes[j, 0]] <= 0:
                                 # Check if the transmation has been finished of the neighbors vehicles or there is switching
                                 continue
-                        if checkv2i[indexes[j, 0]][0] == 2:  
+                        if checkv2i[indexes[j, 0]][0] == 2:
                             # check if the neighbors in the same cluster and share the channel  V2V=0
-                            if self.demand_s[indexes[j, 0]] <= 0:  
+                            if self.demand_s[indexes[j, 0]] <= 0:
                                 # Check if the transmation has been finished of the neighbors vehicles or there is switching
                                 continue
 
@@ -1976,19 +1976,19 @@ class Environ:
                             continue
 
                         receiver_j = self.vehicles[i].destinations
-                        if checkv2i[indexes[j, 0]][0] == 1:  
+                        if checkv2i[indexes[j, 0]][0] == 1:
                             # check if the neighbors in the same cluster and share the channel  V2I = 1
                             V2V_Interference[i, l] += self.convert_dB_to_W  (
-                                    (self.power_selection_v2i[indexes[j, 0]] 
+                                    (self.power_selection_v2i[indexes[j, 0]]
                                      - self.V2V_channels_with_fastfading[
-                                         indexes[j, 0], receiver_j, actionsv21[i][0]] 
+                                         indexes[j, 0], receiver_j, actionsv21[i][0]]
                                          + 2 * self.vehAntGain))
-                        elif checkv2i[indexes[j, 0]][0] == 0:  
+                        elif checkv2i[indexes[j, 0]][0] == 0:
                             # check if the neighbors in the same cluster and share the channel  V2V = 0
                             V2V_Interference[i, l] +=   self.convert_dB_to_W(
                                     (power_selection[indexes[j, 0]]
                                      - self.V2V_channels_with_fastfading[
-                                         indexes[j, 0], receiver_j, actionsv21[i][0]] 
+                                         indexes[j, 0], receiver_j, actionsv21[i][0]]
                                          + 2 * self.vehAntGain))
 
                     if checkv2i[i][0] == 1:  # check the transmation mode is V2I = 1
@@ -1996,19 +1996,19 @@ class Environ:
                             continue
 
                         receiver_j = self.vehicles[i].destinationsBS
-                        if checkv2i[indexes[j, 0]][0] == 0:  
+                        if checkv2i[indexes[j, 0]][0] == 0:
                             # check if the neighbors in the  smae cluster and share the channel  V2V = 0
                             V2I_Interference[i] += self.convert_dB_to_W(
-                                    (power_selection[indexes[j, 0]] 
+                                    (power_selection[indexes[j, 0]]
                                      - self.V2I_channels_with_fastfading[
                                          indexes[j, 0], receiver_j, actionsv21[i][0]]
                                          + self.vehAntGain + self.bsAntGain))
                             # print("1", V2I_Interference[i].astype(int))
-                        elif checkv2i[indexes[j, 0]][0] == 1:  
+                        elif checkv2i[indexes[j, 0]][0] == 1:
                             # check if the neighbors in the  smae cluster and share the channel  V2I = 1
-                            # If the neighboring vehicle's mode is V2I and they are  targeting the same base station                            
+                            # If the neighboring vehicle's mode is V2I and they are  targeting the same base station
                             V2I_Interference[i] += self.convert_dB_to_W (
-                                    (self.power_selection_v2i[indexes[j, 0]] 
+                                    (self.power_selection_v2i[indexes[j, 0]]
                                      - self.V2I_channels_with_fastfading[
                                          indexes[j, 0], receiver_j, actionsv21[i][0]]
                                          + self.vehAntGain + self.bsAntGain))
@@ -2019,7 +2019,7 @@ class Environ:
                             continue
 
                         receiver_j = self.vehicles[i].destinationsST
-                        # If the neighboring vehicle's mode is V2S and they are  targeting the same base station                        
+                        # If the neighboring vehicle's mode is V2S and they are  targeting the same base station
                         V2S_Interference[i] += self.convert_dB_to_W(
                             self.power_selection_v2s[indexes[j, 0], indexes[j, 1]] -
                             self.V2S_channels_with_fastfading[
@@ -2140,7 +2140,7 @@ class Environ:
         SINR = np.zeros((len(self.vehicles)))
         SNR = np.zeros((len(self.vehicles)))
         VDemen = np.zeros((len(self.vehicles), 1))
-        
+
         self.demand_switch_V2V = np.zeros((self.n_Veh, self.n_neighbor))
         self.demand_switch_V2I = np.zeros((self.n_Veh, self.n_neighbor))
         self.demand_switch_V2S = np.zeros((self.n_Veh, self.n_neighbor))
@@ -2196,34 +2196,34 @@ class Environ:
 
                 self.remain_demand_all[i] = self.demand_all[i]
                 # self.demand_all[i] -= (V2I_Rate[i] * self.time_fast * self.bandwidth)
-                 
+
                 # bandwidth per RB, 1 MHz if it is more or less than 1 MHz change in Data rate
                 expected_data = V2I_Rate[i] * self.time_fast * self.bandwidth # time_fast = 0.001
                 # print(f"expected_data: {expected_data}")
-                if expected_data >= self.demand_size:             
+                if expected_data >= self.demand_size:
                     self.demand_all[i] -= expected_data
 
                 # 當交易走V2I通道時，檢查是否有之前來自V2V的交易暫存於發送車輛上
-                idx = 0            
+                idx = 0
                 VehID = self.vehicles[i].id
                 while VehID in LT.v2v_tx_pool.keys() and idx < len(LT.v2v_tx_pool[VehID]):
                     # 檢查交易發送車輛是否存在於v2v_tx_pool
-                    tx_in_veh = LT.v2v_tx_pool[VehID][idx] 
+                    tx_in_veh = LT.v2v_tx_pool[VehID][idx]
                     if transmitted_clock > tx_in_veh.timestamp: # 現在的時刻需要大於暫存於v2v_tx_pool交易的時刻
                         LT.pool.append(tx_in_veh) # 將這筆交易放進pool
                         del LT.v2v_tx_pool[VehID][idx] # 將這筆交易從v2v_tx_pool刪除
                         # print(f"成功將V2V2I交易 {tx_in_veh.id} 加進RSU的pool")
                         # print(f"發送車輛: {tx_in_veh.sender}, 接收RSU: {tx_in_veh.to}")
-                    else: 
+                    else:
                         idx += 1
-                
+
                 # Create V2I Transactions!!!
-                
-                if self.demand_all[i] <= 0:  # eliminate negative demands  
-                    if self.demand[i] == self.demand_size and self.demand_s[i] == self.demand_s_size:                  
-                        receiver_rsu = "rsu" + str(receiver_j)         
+
+                if self.demand_all[i] <= 0:  # eliminate negative demands
+                    if self.demand[i] == self.demand_size and self.demand_s[i] == self.demand_s_size:
+                        receiver_rsu = "rsu" + str(receiver_j)
                         transmitted_data = self.demand_size_all
-                        LT.create_transactions(global_clock, transmitted_clock, self.vehicles[i].id, receiver_rsu, transmitted_data)                    
+                        LT.create_transactions(global_clock, transmitted_clock, self.vehicles[i].id, receiver_rsu, transmitted_data)
                         # print(f"車子ID: {self.vehicles[i].id}")
                         # print(f"接收RSU ID:{receiver_rsu}")
                         # print(f"傳送的訊息量: {transmitted_data}")
@@ -2233,13 +2233,13 @@ class Environ:
                         self.vehicles[i].success_fail += 1
                 else:
                     self.vehicles[i].success_fail -= 1
-                    # receiver_rsu = "rsu" + str(receiver_j)         
-                    # transmitted_data = V2I_Rate[i] * self.time_fast * self.bandwidth                                      
-                    # LT.create_transactions(global_clock, self.vehicles[i].id, receiver_rsu, transmitted_data)                    
+                    # receiver_rsu = "rsu" + str(receiver_j)
+                    # transmitted_data = V2I_Rate[i] * self.time_fast * self.bandwidth
+                    # LT.create_transactions(global_clock, self.vehicles[i].id, receiver_rsu, transmitted_data)
                     # print(f"車子ID: {self.vehicles[i].id}")
                     # print(f"接收RSU ID:{receiver_rsu}")
                     # print(f"傳送的訊息量: {transmitted_data}")
-                
+
                 # Create V2I Transactions!!!
 
                 if (V2I_Rate[i] * self.time_fast * self.bandwidth) >=  (
@@ -2289,9 +2289,9 @@ class Environ:
                 V2V_Interference1[i] = V2V_Interference[i]
                 self.SINR_list_ep_V2V.append(self.convert_W_to_dB(SINR[i]))
                 self.SNR_list_ep_V2V.append( self.convert_W_to_dB(SNR[i]))
-                
-                self.remain_demand[i] = self.demand[i]       
-                # self.demand[i] -= (V2V_Rate[i][0] * self.time_fast * self.bandwidth)         
+
+                self.remain_demand[i] = self.demand[i]
+                # self.demand[i] -= (V2V_Rate[i][0] * self.time_fast * self.bandwidth)
 
                 # 計算預計要傳出的data size
                 expected_data = V2V_Rate[i][0] * self.time_fast * self.bandwidth
@@ -2299,7 +2299,7 @@ class Environ:
                     self.demand[i] -= expected_data
 
                 # Create V2V Transactions!!!
-                
+
                 if self.demand[i] <= 0:  # eliminate negative demands
                     if self.demand_all[i] == self.demand_size_all and self.demand_s[i] == self.demand_s_size:
                         receiver_veh = "veh" + str(receiver_j)
@@ -2320,7 +2320,7 @@ class Environ:
                     # print(f"車子ID: {self.vehicles[i].id}")
                     # print(f"接收車子 ID:{receiver_veh}")
                     # print(f"傳送的訊息量: {transmitted_data}")
-                
+
                 # Create V2V Transactions!!!
 
                 if (V2V_Rate[i][0] * self.time_fast * self.bandwidth) >= (
@@ -2330,7 +2330,7 @@ class Environ:
                 else:
                     self.failed_transmission_V2V += 1
 
-                self.demand_switch_V2V[i] = self.demand[i]                
+                self.demand_switch_V2V[i] = self.demand[i]
                 self.Data_rate_V2V_all[i] += V2V_Rate[i]
                 self.remain[i] = self.demand[i]
                 self.Data_rate_spacific[i] = V2V_Rate[i]
@@ -2360,7 +2360,7 @@ class Environ:
 
                 SNR[i] = np.divide((V2S_Signals[i]), N_I)
                 # print(  "SNR in dB",self.convert_W_to_dB(SNR[i]),"N_0_V2S", self.convert_W_to_dB( N_I))
-                
+
                 if V2S_Interference[i] == 0 or math.isnan(V2S_Interference[i]):
                     V2S_Rate[i] =( self.STBW*np.log2(1 + (V2S_Signals[i])))/  1e6
                     SINR[i] = V2S_Signals[i]
@@ -2379,7 +2379,7 @@ class Environ:
                 expected_data = V2S_Rate[i] * self.time_fast *  1e6
                 if expected_data >= self.demand_s_size:
                     self.demand_s[i] -= expected_data
-                
+
                 # self.demand_s[i] = max(self.demand_s[i], 0)
 
                 # Create V2S Transactions!!!
@@ -2405,7 +2405,7 @@ class Environ:
                     # print(f"車子ID: {self.vehicles[i].id}")
                     # print(f"接收衛星 ID:{receiver_sat}")
                     # print(f"傳送的訊息量: {transmitted_data}")
-                
+
                 # Create V2S Transactions!!!
 
                 if (V2S_Rate[i] * self.time_fast  * 1e6 ) >=  (
@@ -2457,12 +2457,12 @@ class Environ:
         # self.success_transmission = len(self.demand_all[self.demand_all <= 0])
         # self.failed_transmission = len(
         #     self.demand_all[(self.demand_all > 0) & (self.demand_all != self.demand_size_all)])
-        
+
         # if self.test == True:
         self.success_transmission_V2V = len(self.demand[self.demand <= 0])
         self.failed_transmission_V2V = len(
             self.demand[(self.demand > 0) & (self.demand != self.demand_size)])
-        
+
         self.success_transmission_V2S = len(self.demand_s[self.demand_s <= 0])
         self.failed_transmission_V2S = len(
             self.demand_s[(self.demand_s > 0) & (self.demand_s != self.demand_s_size)])
@@ -2525,7 +2525,7 @@ class Environ:
         global V2V_d
         global V2I_d
         global V2S_d
-        
+
         global V2S_pd
         # V2S_pd = np.zeros(size_of_agent)
         # V2V_pd = np.zeros(size_of_agent)
@@ -2629,21 +2629,21 @@ class Environ:
         self.suburban_SNR_per_episode_V2S = []
         self.rural_SNR_per_episode_V2S = []
         self.SNR_SINR_list_ep = round(self.SNR_SINR_list_ep + 0.1, 1)
-        
+
         # 下面這個if的loop有demand
-        if step % var.max_latency == 0:            
+        if step % var.max_latency == 0:
             avarage_data = self.averagex(self.V2V_Rate_avg)
             avarage_datav2i = self.averagex(self.V2I_Rate_avg)
             avarage_datav2s = self.averagex(self.V2I_Rate_avg) # 為什麼這裡不是用self.V2S_Rate_avg???
 
             self.switch_ratio = (self.Switch_count / (len(self.vehicles) * var.max_latency)) * 100
-            
+
             self.v2v_selection_all = (self.v2v_selection / (len(self.vehicles) * var.max_latency)) * 100
             self.v2i_selection_all = (self.v2i_selection / (len(self.vehicles) * var.max_latency)) * 100
             self.v2s_selection_all = (self.v2s_selection / (len(self.vehicles) * var.max_latency)) * 100
-            
+
             self.dump_selection_all = (self.dump_selection / (len(self.vehicles) * var.max_latency)) * 100
-            
+
             # V2I self.demand_all
             if not (all(i <= 0 for i in self.demand_all)):
                 for j in range(len(V2I_Rate)):
@@ -2653,7 +2653,7 @@ class Environ:
                         j] != self.demand_size_all:
                         self.V2I_Rate_latency[j] += (
                                 (self.demand_all[j] + self.sig2) / ((avarage_datav2i) * (1e6)))
-            
+
             # V2V self.demand
             if not (all(i <= 0 for i in self.demand)):
                 for j in range(len(V2I_Rate)):
@@ -2663,7 +2663,7 @@ class Environ:
                         j] != self.demand_size:
                         self.V2V_Rate_latency[j] += (
                                 (self.demand[j] + self.sig2) / ((avarage_data) * (1e6)))
-            
+
             # V2S self.demand_s
             if not (all(i <= 0 for i in self.demand_s)):
                 for j in range(len(V2I_Rate)):
@@ -2683,7 +2683,7 @@ class Environ:
                             self.df_act_store_latency.loc[indexdfl, 'latency'] = int(self.V2I_Rate_latency[i])
                         else:
                             self.df_act_store_latency.loc[
-                                len(self.df_act_store_latency)] = [self.vehicles[i].id, 
+                                len(self.df_act_store_latency)] = [self.vehicles[i].id,
                                                                    int(self.V2I_Rate_latency[ i]), int(step)]
                     if self.demand[i] <= 0:
                         if (self.df_act_store_latency["id"] == self.vehicles[i].id).any():
@@ -3022,7 +3022,7 @@ class Environ:
 
     def reset(self):
         self.vehicle_time_id = var.tarin_sumo_step
-    
+
     def Compute_Interference(self, actions):
         global V2I_Interference1
         global V2V_Interference1
@@ -3030,8 +3030,8 @@ class Environ:
 
         self.V2I_Interference_all = self.convert_W_to_dB(V2I_Interference1)
         self.V2V_Interference_all = self.convert_W_to_dB(V2V_Interference1)
-    
-    
+
+
     def new_random_game(self, n_Veh=0):
         # make a new game
         self.neighbor_vehicles = []
