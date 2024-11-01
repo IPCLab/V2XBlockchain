@@ -4,6 +4,6 @@ pandas
 pyorbital
 pyclustering
 itur
-sklearn
+scikit-learn
 xlsxwriter
 openpyxl
