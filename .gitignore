@@ -2,7 +2,6 @@ git rm --cached
 /*.xlsx
 /*.csv
 /*.png
-/*.txt
 practice.py
 BCplot.py
 venv/*

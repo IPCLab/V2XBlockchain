@@ -1,0 +1,9 @@
+chardet
+numpy
+pandas
+pyorbital
+pyclustering
+itur
+sklearn
+xlsxwriter
+openpyxl
