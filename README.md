@@ -1,6 +1,6 @@
-# Performance Evaluation of Blockchain-Integrated V2X Networks with Multi-Connectivity Management
+# A Multi-Layer Blockchain Simulator and Performance Evaluation of Social Internet of Vehicles with Multi-Connectivity Management
 
-This system resolves the integration challenges between blockchain and V2X communication network operating over three different areas and utilizing multiple connectivity options.
+This system proposes a reference multi-connectivity management method to address the integration challenges between blockchain and V2X communication networks. It focuses on enhancing the success rate of retransmitted blockchain-related messages.
 
 The multi-layer integration of blockchain technology and V2X communication is described as below.
 
