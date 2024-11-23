@@ -12,6 +12,8 @@ The multi-layer integration of blockchain technology and V2X communication is de
 2. The **Connection Layer** enables V2X communication, facilitating interactions among vehicles, infrastructure, and satellites. SIoV enhances this by forming dynamic networks for sharing safety and traffic data, optimizing communication and resource use. It ensures secure message transmission and verifies each message for blockchain transactions, enhancing data integrity and reliability.
 3. The **Consensus Layer** uses **BlockSim** to simulate a blockchain environment. RSUs act as nodes, packaging transactions, generating blocks, and managing broadcasting and synchronization. They compete to create blocks based on their hash power, reflecting their computational capability.
 
+The preprint of this work is available at: https://arxiv.org/abs/2411.14000
+
 ## Installation
 
 1. Clone the repository of this project:
